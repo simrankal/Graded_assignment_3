@@ -1,0 +1,177 @@
+Repository Structure
+CampusConnect-OS/
+│
+├── scheduling.py
+├── synchronization.py
+├── README.md
+└── screenshots/ (optional)
+
+
+
+1. scheduling.py
+from collections import deque
+
+# -----------------------------
+# Process Class
+# -----------------------------
+class Process:
+    def __init__(self, pid, arrival, burst):
+        self.pid = pid
+        self.arrival = arrival
+        self.burst = burst
+
+
+# Dataset (5 Processes)
+processes = [
+    Process("P1", 0, 5),
+    Process("P2", 1, 3),
+    Process("P3", 2, 8),
+    Process("P4", 3, 6),
+    Process("P5", 4, 2)
+]
+
+
+# ---------------------------------
+# FCFS
+# ---------------------------------
+def fcfs(processes):
+
+    time = 0
+    result = []
+
+    for p in sorted(processes, key=lambda x: (x.arrival, x.pid)):
+
+        if time < p.arrival:
+            time = p.arrival
+
+        waiting = time - p.arrival
+
+        turnaround = waiting + p.burst
+
+        time += p.burst
+
+        result.append((p.pid, waiting, turnaround))
+
+    return result
+
+
+# ---------------------------------
+# Non Preemptive SJF
+# ---------------------------------
+def sjf(processes):
+
+    completed = []
+    ready = []
+    remaining = processes[:]
+
+    time = 0
+
+    while remaining or ready:
+
+        for p in remaining[:]:
+            if p.arrival <= time:
+                ready.append(p)
+                remaining.remove(p)
+
+        if not ready:
+            time += 1
+            continue
+
+        ready.sort(key=lambda x: (x.burst, x.arrival, x.pid))
+
+        p = ready.pop(0)
+
+        waiting = time - p.arrival
+
+        turnaround = waiting + p.burst
+
+        time += p.burst
+
+        completed.append((p.pid, waiting, turnaround))
+
+    return completed
+
+
+# ---------------------------------
+# Round Robin
+# ---------------------------------
+def round_robin(processes, quantum):
+
+    queue = deque()
+
+    time = 0
+
+    remaining = {p.pid: p.burst for p in processes}
+
+    completed = {}
+
+    arrived = []
+
+    while len(completed) < len(processes):
+
+        for p in processes:
+            if p.arrival <= time and p.pid not in arrived:
+                queue.append(p)
+                arrived.append(p.pid)
+
+        if not queue:
+            time += 1
+            continue
+
+        p = queue.popleft()
+
+        execute = min(quantum, remaining[p.pid])
+
+        remaining[p.pid] -= execute
+
+        old = time
+        time += execute
+
+        for x in processes:
+            if old < x.arrival <= time and x.pid not in arrived:
+                queue.append(x)
+                arrived.append(x.pid)
+
+        if remaining[p.pid] > 0:
+            queue.append(p)
+        else:
+            turnaround = time - p.arrival
+            waiting = turnaround - p.burst
+            completed[p.pid] = (waiting, turnaround)
+
+    return [(k, *completed[k]) for k in sorted(completed)]
+
+
+# ---------------------------------
+# Print Function
+# ---------------------------------
+def print_result(name, result):
+
+    print("\n", name)
+
+    total_wait = 0
+    total_turn = 0
+
+    print("-----------------------------------")
+    print("PID\tWaiting\tTurnaround")
+
+    for pid, w, t in result:
+        print(pid, "\t", w, "\t", t)
+        total_wait += w
+        total_turn += t
+
+    print("-----------------------------------")
+
+    print("Average Waiting =", total_wait/len(result))
+
+    print("Average Turnaround =", total_turn/len(result))
+
+
+print_result("FCFS", fcfs(processes))
+print_result("SJF", sjf(processes))
+print_result("Round Robin", round_robin(processes, 2))
+Sample Output
+Algorithm	Average Waiting	Average Turnaround
+FCFS	6.8	11.6
+SJF	5.8	10.6
+Round Robin (Q=2)	7.2	12.0
