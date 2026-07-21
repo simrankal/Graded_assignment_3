@@ -1,0 +1,11 @@
+INSERT INTO Instructors VALUES
+(1,'Dr. Mehta','mehta@gmail.com'),
+(2,'Dr. Sharma','sharma@gmail.com'),
+(3,'Dr. Gupta','gupta@gmail.com'),
+(4,'Dr. Roy','roy@gmail.com'),
+(5,'Dr. Singh','singh@gmail.com'),
+(6,'Dr. Khan','khan@gmail.com'),
+(7,'Dr. Das','das@gmail.com'),
+(8,'Dr. Verma','verma@gmail.com'),
+(9,'Dr. Patel','patel@gmail.com'),
+(10,'Dr. Rao','rao@gmail.com');
