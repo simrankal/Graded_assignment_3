@@ -1,0 +1,11 @@
+INSERT INTO Courses VALUES
+(101,'Database Systems',4,20,1),
+(102,'Operating Systems',4,15,2),
+(103,'Computer Networks',3,10,3),
+(104,'Data Structures',4,25,4),
+(105,'Machine Learning',4,12,5),
+(106,'Cloud Computing',3,20,6),
+(107,'Cyber Security',3,15,7),
+(108,'AI',4,10,8),
+(109,'Software Engineering',3,25,9),
+(110,'Big Data',3,30,10);
