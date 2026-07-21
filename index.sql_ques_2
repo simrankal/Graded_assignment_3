@@ -1,0 +1,11 @@
+------------------------------------------------
+-- Single Index
+------------------------------------------------
+CREATE INDEX idx_student_department
+ON Students(department);
+
+------------------------------------------------
+-- Composite Index
+------------------------------------------------
+CREATE INDEX idx_enrollment_student_course
+ON Enrollments(student_id,course_id);
