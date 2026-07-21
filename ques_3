@@ -1,0 +1,234 @@
+CampusConnect-Cryptography/
+│
+├── rsa.py
+├── diffie_hellman.py
+├── README.md
+└── screenshots/ (optional)
+
+
+
+rsa.py
+
+import math
+
+# -----------------------------
+# Helper Functions
+# -----------------------------
+def is_prime(n):
+    if n <= 1:
+        return False
+    for i in range(2, int(n**0.5)+1):
+        if n % i == 0:
+            return False
+    return True
+
+
+def mod_inverse(e, phi):
+    """
+    Returns the smallest non-negative modular inverse
+    such that (d * e) % phi == 1
+    """
+    for d in range(phi):
+        if (d * e) % phi == 1:
+            return d
+    return None
+
+
+def rsa(p, q, e, m):
+
+    print("="*50)
+
+    print(f"Input:")
+    print(f"p = {p}")
+    print(f"q = {q}")
+    print(f"e = {e}")
+    print(f"m = {m}")
+
+    # Validate primes
+    if not is_prime(p):
+        raise ValueError("p is not prime")
+
+    if not is_prime(q):
+        raise ValueError("q is not prime")
+
+    if p == q:
+        raise ValueError("p and q must be distinct")
+
+    n = p * q
+    phi = (p-1)*(q-1)
+
+    if not (1 < e < phi):
+        raise ValueError("Invalid e")
+
+    if math.gcd(e, phi) != 1:
+        raise ValueError("e is not coprime with phi")
+
+    if not (0 <= m < n):
+        raise ValueError("Message must satisfy 0 <= m < n")
+
+    d = mod_inverse(e, phi)
+
+    if d is None:
+        raise ValueError("No modular inverse exists")
+
+    c = pow(m, e, n)
+
+    recovered = pow(c, d, n)
+
+    print("\nComputed Values")
+    print("---------------------------")
+    print("n =", n)
+    print("phi(n) =", phi)
+    print("Public exponent (e) =", e)
+    print("Private exponent (d) =", d)
+    print("Encrypted message =", c)
+    print("Recovered message =", recovered)
+
+    print("="*50)
+    print()
+
+
+# ----------------------------------------
+# Test Case 1 (Worked Example)
+# ----------------------------------------
+
+rsa(
+    p=3,
+    q=11,
+    e=3,
+    m=4
+)
+
+# ----------------------------------------
+# Test Case 2
+# ----------------------------------------
+
+rsa(
+    p=17,
+    q=11,
+    e=7,
+    m=88
+)
+
+
+
+
+
+
+
+
+
+diffie_hellman.py
+
+from math import gcd
+
+# ------------------------------------
+# Primitive Root Check
+# ------------------------------------
+def prime_factors(n):
+    factors = set()
+
+    while n % 2 == 0:
+        factors.add(2)
+        n //= 2
+
+    i = 3
+
+    while i * i <= n:
+
+        while n % i == 0:
+            factors.add(i)
+            n //= i
+
+        i += 2
+
+    if n > 2:
+        factors.add(n)
+
+    return factors
+
+
+def primitive_root(alpha, p):
+
+    phi = p - 1
+
+    factors = prime_factors(phi)
+
+    for factor in factors:
+        if pow(alpha, phi // factor, p) == 1:
+            return False
+
+    return True
+
+
+def diffie_hellman(p, alpha, a, b):
+
+    print("="*60)
+
+    print("Input")
+
+    print("Prime (p) =", p)
+    print("Primitive Root =", alpha)
+    print("Alice Private =", a)
+    print("Bob Private =", b)
+
+    if not primitive_root(alpha, p):
+        raise ValueError("alpha is not primitive root")
+
+    if not (1 < a < p-1):
+        raise ValueError("Invalid Alice private key")
+
+    if not (1 < b < p-1):
+        raise ValueError("Invalid Bob private key")
+
+    A = pow(alpha, a, p)
+
+    B = pow(alpha, b, p)
+
+    KA = pow(B, a, p)
+
+    KB = pow(A, b, p)
+
+    print("\nComputed Values")
+    print("-------------------------")
+    print("Alice Public =", A)
+    print("Bob Public =", B)
+    print("Alice Shared Key =", KA)
+    print("Bob Shared Key =", KB)
+
+    print("\nKeys Match =", KA == KB)
+
+    print("="*60)
+    print()
+
+
+# ----------------------------------------
+# Worked Example
+# ----------------------------------------
+
+diffie_hellman(
+    p=29,
+    alpha=2,
+    a=5,
+    b=12
+)
+
+# ----------------------------------------
+# Second Test Case
+# ----------------------------------------
+
+diffie_hellman(
+    p=23,
+    alpha=5,
+    a=6,
+    b=15
+)
+
+
+
+
+
+
+
+
+
