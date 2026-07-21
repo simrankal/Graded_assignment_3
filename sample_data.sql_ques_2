@@ -1,0 +1,11 @@
+INSERT INTO Students VALUES
+(1,'Amit','Sharma','amit@gmail.com','CSE',2022),
+(2,'Neha','Singh','neha@gmail.com','ECE',2022),
+(3,'Rahul','Verma','rahul@gmail.com','CSE',2021),
+(4,'Priya','Kumar','priya@gmail.com','IT',2023),
+(5,'Rohan','Gupta','rohan@gmail.com','ME',2022),
+(6,'Anjali','Patel','anjali@gmail.com','CSE',2021),
+(7,'Arjun','Das','arjun@gmail.com','EEE',2022),
+(8,'Pooja','Yadav','pooja@gmail.com','CSE',2023),
+(9,'Sneha','Joshi','sneha@gmail.com','ECE',2024),
+(10,'Vikas','Roy','vikas@gmail.com','IT',2024);
