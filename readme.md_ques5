@@ -1,0 +1,172 @@
+README.md
+Scheduling Rules
+If multiple processes have the same arrival time, they are executed according to their input order (Process ID).
+For SJF, if burst times are equal, processes are ordered by arrival time and then Process ID.
+For Round Robin, any processes arriving during a running process's time quantum are enqueued before the preempted process is placed back into the ready queue.
+Time quantum used in this implementation: 2.
+2. Priority Scheduling with Aging
+Priority Convention
+
+Higher numeric value = Higher Priority
+
+Starvation Scenario
+
+Assume new high-priority background tasks continue arriving every two time units. Without aging, the low-priority process P5 never receives CPU time during the observed window because each arriving task has a higher priority.
+
+Aging Policy
+
+Increase the priority of every waiting process by 1 after every 5 time units spent waiting.
+
+Time	P5 Priority	New High-Priority Arrival	Runs?
+0	1	P1 (10)	No
+5	2	P6 (10)	No
+10	3	P7 (10)	No
+15	4	P8 (10)	No
+20	5	P9 (10)	No
+25	6	P10 (10)	No
+30	7	P11 (10)	No
+35	8	P12 (10)	No
+40	9	P13 (10)	No
+45	10	P14 (10)	Yes (tie broken by earlier arrival)
+
+Without aging: P5 would continue to be postponed indefinitely because higher-priority processes keep arriving.
+
+With aging: P5’s priority gradually increases until it matches the highest-priority arrivals, after which the arrival-time tie-breaker allows it to execute, eliminating starvation.
+
+3. synchronization.py
+import threading
+
+counter = 0
+
+# -----------------------
+# Unsynchronized Version
+# -----------------------
+
+barrier = threading.Barrier(2)
+
+def race_increment():
+    global counter
+
+    value = counter          # Read
+
+    barrier.wait()           # Force both threads to read same value
+
+    counter = value + 1      # Write
+
+
+t1 = threading.Thread(target=race_increment)
+t2 = threading.Thread(target=race_increment)
+
+t1.start()
+t2.start()
+
+t1.join()
+t2.join()
+
+print("Unsynchronized Counter =", counter)
+print("Expected = 2")
+
+
+# -----------------------
+# Semaphore Version
+# -----------------------
+
+counter = 0
+
+lock = threading.Semaphore(1)
+
+def safe_increment():
+
+    global counter
+
+    with lock:
+
+        counter += 1
+
+
+threads = []
+
+for i in range(2):
+
+    t = threading.Thread(target=safe_increment)
+
+    threads.append(t)
+
+    t.start()
+
+for t in threads:
+    t.join()
+
+print("Synchronized Counter =", counter)
+print("Expected = 2")
+Expected Output
+Unsynchronized Counter = 1
+Expected = 2
+
+Synchronized Counter = 2
+Expected = 2
+
+The barrier in the unsynchronized version guarantees both threads read the same stale value before either writes, so one increment is deterministically lost. The synchronized version removes the barrier and protects the entire read-modify-write operation with a binary semaphore, ensuring the expected result every run.
+
+4. Deadlock Analysis
+Scenario
+
+Three CampusConnect backend processes compete for three resources:
+
+P1 – Enrollment Service
+P2 – Report Generator
+P3 – Notification Service
+
+Resources:
+
+R1 – Database Connection
+R2 – File Lock
+R3 – Cache Lock
+Resource Allocation Graph (Directed Edges)
+R1 -> P1   (Database allocated to P1)
+P1 -> R2   (P1 requests File Lock)
+
+R2 -> P2   (File Lock allocated to P2)
+P2 -> R3   (P2 requests Cache Lock)
+
+R3 -> P3   (Cache Lock allocated to P3)
+P3 -> R1   (P3 requests Database Connection)
+Four Necessary Conditions
+
+1. Mutual Exclusion
+
+Each resource (database connection, file lock, cache lock) can be used by only one process at a time.
+
+2. Hold and Wait
+
+Each process holds one resource while waiting for another resource already held by another process.
+
+3. No Preemption
+
+Resources cannot be forcibly taken away; they are released only when the holding process finishes using them.
+
+4. Circular Wait
+
+P1 waits for a resource held by P2, P2 waits for a resource held by P3, and P3 waits for a resource held by P1, forming a cycle.
+
+Edge to Remove
+
+Remove the request:
+
+P3 -> R1
+
+Breaking this request removes the circular wait, allowing the other processes to complete and release their resources.
+
+Deadlock Prevention Strategy
+
+Impose Resource Ordering
+
+Require every process to request resources in a fixed order, for example:
+
+Database → File Lock → Cache Lock
+
+This prevents circular waits because no process can request a lower-ordered resource after acquiring a higher-ordered one.
+
+Limitation
+
+Processes may need to acquire resources earlier than necessary or wait longer to preserve the ordering, which can reduce concurrency and overall system performance.
